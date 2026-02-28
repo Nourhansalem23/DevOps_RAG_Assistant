@@ -33,3 +33,9 @@ saved_model/**/* filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.zst filter=lfs diff=lfs merge=lfs -text
 *tfevents* filter=lfs diff=lfs merge=lfs -text
+data/deployments[[:space:]]K8s[[:space:]]doc.pdf filter=lfs diff=lfs merge=lfs -text
+data/docker_cli.pdf filter=lfs diff=lfs merge=lfs -text
+data/docker_file.pdf filter=lfs diff=lfs merge=lfs -text
+data/kubernates[[:space:]]command-lines[[:space:]]docs.pdf filter=lfs diff=lfs merge=lfs -text
+data/The[[:space:]]DevOps[[:space:]]Handbook[[:space:]]How[[:space:]]to[[:space:]]Create[[:space:]]World-Class[[:space:]]Agility,[[:space:]]Reliability,[[:space:]]and[[:space:]]Security[[:space:]]in[[:space:]]Technology[[:space:]]Organizations[[:space:]]by[[:space:]]Gene[[:space:]]Kim,[[:space:]]Jez[[:space:]]Humble,[[:space:]]Patrick[[:space:]]Debois,[[:space:]]John[[:space:]]Willis.pdf filter=lfs diff=lfs merge=lfs -text
+vectorstore_v3/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
