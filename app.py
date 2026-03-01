@@ -30,7 +30,7 @@ def scroll_to_bottom():
         height=0,
     )
 def main():
-    st.title("🤖 DevOps RAG Assistant")
+    st.title("☁️⚙️ DevOps RAG Assistant")
     st.write("Upload your DevOps PDFs and ask questions! Powered by Qwen 2.5 7B & ChromaDB.")
     
     # Initialize chat history
