@@ -144,38 +144,36 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        /* Center header content */
+        /* Center header content – only image now */
         .centered-header {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
-        .centered-header h1 {
-            margin-top: 0.5rem;
-            font-size: 2.5rem;
-            font-weight: 600;
+        .centered-header img {
+            margin-bottom: 0.5rem;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER with centered large image and title -----
-    logo_path = "assets/unnamed.jpg"   # <-- place your image here (resize to ~150x150, keep under 1MB)
+    # ----- HEADER with centered large image (no title) -----
+    logo_path = "assets/unnamed.jpg"   # <-- place your image here (resize to ~200x200, keep under 1MB)
 
     with st.container():
         st.markdown('<div class="centered-header">', unsafe_allow_html=True)
         if os.path.exists(logo_path):
             # Display image larger and centered
-            st.image(logo_path, width=150)
+            st.image(logo_path, width=200)  # increased size
         else:
-            # Optional fallback: show an emoji or nothing
-            st.markdown("🖼️")  # or just leave empty
-        st.markdown("<h1>RAGOps</h1>", unsafe_allow_html=True)
+            # Optional fallback: show nothing or an emoji
+            st.markdown("🖼️")  # placeholder if image missing
         st.markdown("</div>", unsafe_allow_html=True)
 
+    # Subtitle directly after image
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
