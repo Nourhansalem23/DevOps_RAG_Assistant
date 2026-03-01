@@ -177,7 +177,7 @@ def main():
         st.markdown("<h1>RAGOps</h1>", unsafe_allow_html=True)  # no icon
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("Upload your DevOps PDFs and ask questions")
+    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
     if "messages" not in st.session_state:
