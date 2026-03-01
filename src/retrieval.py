@@ -7,11 +7,11 @@ from src.ingestion import get_embeddings
 
 logger = get_logger(__name__)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if os.path.basename(BASE_DIR) != "devops-rag-assistant":
-    BASE_DIR = os.path.join(os.getcwd(), "devops-rag-assistant")
-
-VECTORSTORE_DIR = os.path.join(BASE_DIR, "vectorstore_v3")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__)) 
+# Goes up one level to the root project folder
+ROOT_DIR = os.path.dirname(CURRENT_DIR) 
+# Points directly to the vectorstore folder
+VECTORSTORE_DIR = os.path.join(ROOT_DIR, "vectorstore_v3")
 
 def get_retriever():
     """Returns the Chroma vectorstore directly, so we can do custom similarity searches."""
