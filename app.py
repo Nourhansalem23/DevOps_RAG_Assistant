@@ -131,7 +131,17 @@ def main():
         .stAlert {
             border-left-color: var(--devops-blue) !important;
         }
+        div.stChatInput textarea::placeholder {
+        color: #007bff !important;
+        opacity: 0.8;
+        }
 
+        /* Chat input border on focus – blue */
+        div.stChatInput textarea:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 1px #007bff !important;
+        outline: none !important;
+        }
         /* Footer */
         .footer {
             text-align: center;
@@ -153,10 +163,10 @@ def main():
         with col1:
             st.image(logo_path, width=60)
         with col2:
-            st.markdown("# ⚙️ DevOps RAG Assistant")
+            st.markdown("# ☁️🛠️ DevOps RAG Assistant")
     else:
-        st.markdown("# ⚙️ DevOps RAG Assistant")
-    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+        st.markdown("# ☁️🛠️ DevOps RAG Assistant")
+    st.markdown("                Upload your DevOps PDFs and ask questions ")
 
     # Initialize chat history
     if "messages" not in st.session_state:
