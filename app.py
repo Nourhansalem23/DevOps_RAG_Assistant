@@ -32,7 +32,72 @@ def scroll_to_bottom():
 def main():
     st.title("☁️⚙️ DevOps RAG Assistant")
     st.write("Upload your DevOps PDFs and ask questions! Powered by Qwen 2.5 7B & ChromaDB.")
-    
+     st.markdown(
+        """
+        <style>
+        /* Global accent color – buttons, borders, etc. */
+        :root {
+            --devops-blue: #007bff;
+            --devops-blue-hover: #0056b3;
+        }
+
+        /* Chat input placeholder (already blue) */
+        .stChatInput textarea::placeholder {
+            color: var(--devops-blue) !important;
+            opacity: 0.8;
+        }
+
+        /* Chat input focus border */
+        .stChatInput textarea:focus {
+            border-color: var(--devops-blue) !important;
+            box-shadow: 0 0 0 1px var(--devops-blue) !important;
+        }
+
+        /* All buttons – primary style */
+        .stButton button {
+            background-color: var(--devops-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .stButton button:hover {
+            background-color: var(--devops-blue-hover);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+        .stButton button:active {
+            background-color: var(--devops-blue-hover);
+            transform: scale(0.98);
+        }
+
+        /* Secondary buttons (like file uploader clear button) – optional */
+        .stFileUploader button {
+            background-color: white;
+            color: var(--devops-blue);
+            border: 1px solid var(--devops-blue);
+        }
+        .stFileUploader button:hover {
+            background-color: #e6f2ff;
+        }
+
+        /* Multiselect focus border */
+        .stMultiSelect [data-baseweb="select"]:focus-within {
+            border-color: var(--devops-blue) !important;
+            box-shadow: 0 0 0 1px var(--devops-blue) !important;
+        }
+
+        /* Optional: style the info/warning boxes to match */
+        .stAlert {
+            border-left-color: var(--devops-blue) !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
