@@ -166,15 +166,30 @@ def main():
     # ----- HERO SECTION with centered image -----
     logo_path = "assets/unnamed.jpg"   # <-- place your image here
 
-    with st.container():
-        st.markdown('<div class="hero-container">', unsafe_allow_html=True)
-        if os.path.exists(logo_path):
-            # Image is automatically centered by flexbox
-            st.image(logo_path, width=350)  # adjust width as needed
-        else:
-            # Optional fallback: show nothing or an emoji
-            st.markdown("🖼️")  # placeholder if image missing
-        st.markdown("</div>", unsafe_allow_html=True)
+    logo_path = "assets/unnamed.jpg"
+
+    if os.path.exists(logo_path):
+       with open(logo_path, "rb") as img_file:
+          import base64
+          img_base64 = base64.b64encode(img_file.read()).decode()
+
+       st.markdown(
+          f"""
+          <div class="hero-container">
+              <img src="data:image/jpeg;base64,{img_base64}" width="350">
+          </div>
+          """,
+        unsafe_allow_html=True,
+        )
+    else:
+    st.markdown(
+        """
+        <div class="hero-container">
+            <div style="font-size:60px;">🖼️</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Subtitle directly below hero section
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
