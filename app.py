@@ -3,7 +3,8 @@ import os
 from src.ingestion import ingest_documents
 from src.generation import ask_question
 
-st.set_page_config(page_title="DevOps RAG Assistant", page_icon="⚙️")
+# Sidebar starts collapsed
+st.set_page_config(page_title="RAGOps", page_icon="⚙️", initial_sidebar_state="collapsed")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
@@ -41,7 +42,6 @@ def main():
             --light-bg: #f8f9fa;
             --border-radius: 12px;
         }
-
         /* Multiselect tags – blue */
         .stMultiSelect [data-baseweb="tag"] {
             background-color: var(--devops-blue) !important;
@@ -57,7 +57,6 @@ def main():
         .stMultiSelect [data-baseweb="tag"] button:hover {
             opacity: 1;
         }
-
         /* Chat messages */
         .stChatMessage {
             border-radius: 18px !important;
@@ -79,12 +78,10 @@ def main():
             align-self: flex-start;
             border-bottom-left-radius: 4px !important;
         }
-
         /* Smooth scrolling container */
         .stChatMessageContainer {
             scroll-behavior: smooth;
         }
-
         /* Sidebar cards */
         .sidebar-section {
             background-color: white;
@@ -94,7 +91,6 @@ def main():
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             border: 1px solid #f0f0f0;
         }
-
         /* Buttons */
         .stButton button {
             background-color: var(--devops-blue);
@@ -109,7 +105,6 @@ def main():
             background-color: var(--devops-blue-hover);
             box-shadow: 0 4px 10px rgba(0,123,255,0.2);
         }
-
         /* File uploader button */
         .stFileUploader button {
             background-color: white;
@@ -119,28 +114,26 @@ def main():
         .stFileUploader button:hover {
             background-color: #e6f2ff;
         }
-
         /* Input focus */
         .stChatInput textarea:focus,
         .stMultiSelect [data-baseweb="select"]:focus-within {
             border-color: var(--devops-blue) !important;
             box-shadow: 0 0 0 1px var(--devops-blue) !important;
         }
-
         /* Info/warning boxes */
         .stAlert {
             border-left-color: var(--devops-blue) !important;
         }
+        /* Blue placeholder text */
         div.stChatInput textarea::placeholder {
-        color: #007bff !important;
-        opacity: 0.8;
+            color: #007bff !important;
+            opacity: 0.8;
         }
-
         /* Chat input border on focus – blue */
         div.stChatInput textarea:focus {
-        border-color: #007bff !important;
-        box-shadow: 0 0 0 1px #007bff !important;
-        outline: none !important;
+            border-color: #007bff !important;
+            box-shadow: 0 0 0 1px #007bff !important;
+            outline: none !important;
         }
         /* Footer */
         .footer {
@@ -156,17 +149,17 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER with fallback if logo missing -----
-    logo_path = "assets/devops_icon.png"
+    # ----- HEADER with AWS image -----
+    logo_path = "assets/unnamed.jpg"   # <-- place your image here
     if os.path.exists(logo_path):
         col1, col2 = st.columns([1, 10])
         with col1:
             st.image(logo_path, width=60)
         with col2:
-            st.markdown("# ☁️🛠️ DevOps RAG Assistant")
+            st.markdown("# ⚙️ **RAGOps**")
     else:
-        st.markdown("# ☁️🛠️ DevOps RAG Assistant")
-    st.markdown("                Upload your DevOps PDFs and ask questions ")
+        st.markdown("# ⚙️ **RAGOps**")
+    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -230,7 +223,6 @@ def main():
             if "sources" in message and message["sources"]:
                 with st.expander("📚 Retrieved Sources"):
                     for src in message["sources"]:
-                        # Display each source as a small card (title & page only – snippet can be added later)
                         st.markdown(
                             f"""
                             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
@@ -268,9 +260,19 @@ def main():
                     })
 
                     if sources:
-                        with st.expander("View Retrieved Sources"):
+                        with st.expander("📚 Retrieved Sources"):
                             for src in sources:
-                                st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
+                                st.markdown(
+                                    f"""
+                                    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
+                                        <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
+
+                    scroll_to_bottom()
+
                 except Exception as e:
                     st.error(f"Error generating response: {e}")
 
