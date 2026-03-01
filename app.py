@@ -271,11 +271,7 @@ def main():
                         with st.expander("📚 Retrieved Sources"):
                             for src in sources:
                                 st.markdown(
-                                    f"""
-                                    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                        <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
-                                    </div>
-                                    """,
+                                    
                                     unsafe_allow_html=True,
                                 )
 
