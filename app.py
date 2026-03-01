@@ -103,23 +103,23 @@ def main():
         st.session_state.messages = []
         
     with st.sidebar:
-       # --- Document Management Section ---
-       st.markdown("## 📁 **Document Management**")
-       st.caption("Upload your DevOps PDFs (max 200MB each).")
+    # --- Document Management Section ---
+    st.markdown("## 📁 **Document Management**")
+    st.caption("Upload your DevOps PDFs (max 200MB each).")
     
-       uploaded_files = st.file_uploader(
-           "Choose PDF files",
-           type="pdf",
-           accept_multiple_files=True,
-           help="Drag and drop or click to select multiple PDFs."
-       )
+    uploaded_files = st.file_uploader(
+        "Choose PDF files",
+        type="pdf",
+        accept_multiple_files=True,
+        help="Drag and drop or click to select multiple PDFs."
+    )
     
-      
-       if st.button("⚙️ Process Documents", use_container_width=True):
-           if uploaded_files:
+    # Styled process button (CSS will be added globally later)
+    if st.button("⚙️ Process Documents", use_container_width=True):
+        if uploaded_files:
             if not os.path.exists(DATA_DIR):
                 os.makedirs(DATA_DIR)
-              with st.spinner("Saving files and building vector index..."):
+            with st.spinner("Saving files and building vector index..."):
                 for file in uploaded_files:
                     file_path = os.path.join(DATA_DIR, file.name)
                     with open(file_path, "wb") as f:
@@ -131,6 +131,26 @@ def main():
                     st.error(f"Error during processing: {e}")
         else:
             st.warning("Please upload some PDFs first.")
+    
+    st.divider()
+    
+    # --- Active Documents Section ---
+    st.markdown("## 📄 **Active Documents**")
+    st.caption("Select which documents to query against. Unchecked ones will be ignored.")
+    
+    available_docs = list_uploaded_pdfs()
+    active_docs = st.multiselect(
+        "Documents to search",
+        options=available_docs,
+        default=available_docs,
+        help="Only the selected PDFs will be used when answering your questions."
+    )
+    
+    # Optional: show a small summary
+    if active_docs:
+        st.info(f"🔍 Searching **{len(active_docs)}** document(s).")
+    else:
+        st.warning("⚠️ No documents selected – please select at least one.")
     
     st.divider()
     
