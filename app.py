@@ -95,7 +95,7 @@ def main():
             border: 1px solid #f0f0f0;
         }
 
-        /* Buttons (already blue, but we ensure consistency) */
+        /* Buttons */
         .stButton button {
             background-color: var(--devops-blue);
             color: white;
@@ -146,11 +146,15 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER -----
-    col1, col2 = st.columns([1, 10])
-    with col1:
-        st.image("assets/devops_icon.png", width=60)  # replace with your logo
-    with col2:
+    # ----- HEADER with fallback if logo missing -----
+    logo_path = "assets/devops_icon.png"
+    if os.path.exists(logo_path):
+        col1, col2 = st.columns([1, 10])
+        with col1:
+            st.image(logo_path, width=60)
+        with col2:
+            st.markdown("# ⚙️ DevOps RAG Assistant")
+    else:
         st.markdown("# ⚙️ DevOps RAG Assistant")
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
@@ -216,12 +220,11 @@ def main():
             if "sources" in message and message["sources"]:
                 with st.expander("📚 Retrieved Sources"):
                     for src in message["sources"]:
-                        # Display each source as a small card
+                        # Display each source as a small card (title & page only – snippet can be added later)
                         st.markdown(
                             f"""
                             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}<br>
-                                <span style="font-size: 0.9rem; color: #495057;">{src.get('snippet', 'No preview available')[:150]}…</span>
+                                <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
                             </div>
                             """,
                             unsafe_allow_html=True,
@@ -245,11 +248,6 @@ def main():
                 try:
                     response, sources = ask_question(prompt, active_docs)
 
-                    # Add a small snippet to each source for preview
-                    for s in sources:
-                        # You may need to adjust this based on your actual source structure
-                        s['snippet'] = s.get('content', '')[:200] if 'content' in s else ''
-
                     st.markdown(response)
 
                     # Store response
@@ -265,8 +263,7 @@ def main():
                                 st.markdown(
                                     f"""
                                     <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                        <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}<br>
-                                        <span style="font-size: 0.9rem; color: #495057;">{src.get('snippet', 'No preview available')[:150]}…</span>
+                                        <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
                                     </div>
                                     """,
                                     unsafe_allow_html=True,
