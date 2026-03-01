@@ -144,22 +144,40 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
+        /* Center header content */
+        .centered-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .centered-header h1 {
+            margin-top: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER with AWS image -----
+    # ----- HEADER with centered large image and title -----
     logo_path = "assets/unnamed.jpg"   # <-- place your image here
-    if os.path.exists(logo_path):
-        col1, col2 = st.columns([1, 10])
-        with col1:
-            st.image(logo_path, width=60)
-        with col2:
-            st.markdown("# ⚙️ **RAGOps**")
-    else:
-        st.markdown("# ⚙️ **RAGOps**")
-    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+
+    # Create a container for centered header
+    with st.container():
+        st.markdown('<div class="centered-header">', unsafe_allow_html=True)
+        if os.path.exists(logo_path):
+            # Display image larger and centered
+            st.image(logo_path, width=150)  # adjust width as needed
+        else:
+            # If image missing, just show a placeholder icon (optional)
+            st.markdown("🖼️")  # or nothing
+        st.markdown("<h1>RAGOps</h1>", unsafe_allow_html=True)  # no icon
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("Upload your DevOps PDFs and ask questions")
 
     # Initialize chat history
     if "messages" not in st.session_state:
