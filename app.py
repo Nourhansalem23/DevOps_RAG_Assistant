@@ -163,18 +163,17 @@ def main():
     )
 
     # ----- HEADER with centered large image and title -----
-    logo_path = "assets/unnamed.jpg"   # <-- place your image here
+    logo_path = "assets/unnamed.jpg"   # <-- place your image here (resize to ~150x150, keep under 1MB)
 
-    # Create a container for centered header
     with st.container():
         st.markdown('<div class="centered-header">', unsafe_allow_html=True)
         if os.path.exists(logo_path):
             # Display image larger and centered
-            st.image(logo_path, width=150)  # adjust width as needed
+            st.image(logo_path, width=150)
         else:
-            # If image missing, just show a placeholder icon (optional)
-            st.markdown("🖼️")  # or nothing
-        st.markdown("<h1>RAGOps</h1>", unsafe_allow_html=True)  # no icon
+            # Optional fallback: show an emoji or nothing
+            st.markdown("🖼️")  # or just leave empty
+        st.markdown("<h1>RAGOps</h1>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
