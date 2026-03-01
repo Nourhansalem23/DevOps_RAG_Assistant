@@ -191,7 +191,7 @@ def main():
         )
 
     # Subtitle directly below hero section
-    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+    st.markdown("   Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
     if "messages" not in st.session_state:
