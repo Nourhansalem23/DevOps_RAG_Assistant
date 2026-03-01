@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import base64
 from src.ingestion import ingest_documents
 from src.generation import ask_question
 
@@ -163,33 +164,31 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # ----- HERO SECTION with centered image -----
-    logo_path = "assets/unnamed.jpg"   # <-- place your image here
-
-    logo_path = "assets/unnamed.jpg"
+    # ----- HERO SECTION with centered image (base64 to avoid MediaFileStorageError) -----
+    logo_path = "assets/unnamed.jpg"  # <-- place your image here
 
     if os.path.exists(logo_path):
-       with open(logo_path, "rb") as img_file:
-          import base64
-          img_base64 = base64.b64encode(img_file.read()).decode()
+        with open(logo_path, "rb") as img_file:
+            img_base64 = base64.b64encode(img_file.read()).decode()
 
-       st.markdown(
-          f"""
-          <div class="hero-container">
-              <img src="data:image/jpeg;base64,{img_base64}" width="350">
-          </div>
-          """,
-        unsafe_allow_html=True,
+        st.markdown(
+            f"""
+            <div class="hero-container">
+                <img src="data:image/jpeg;base64,{img_base64}" width="350">
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
     else:
-    st.markdown(
-        """
-        <div class="hero-container">
-            <div style="font-size:60px;">🖼️</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        # Fallback emoji if image is missing
+        st.markdown(
+            """
+            <div class="hero-container">
+                <div style="font-size:60px;">🖼️</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # Subtitle directly below hero section
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
