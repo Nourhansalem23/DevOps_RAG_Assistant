@@ -268,15 +268,9 @@ def main():
                     })
 
                     if sources:
-                        with st.expander("📚 Retrieved Sources"):
+                        with st.expander("View Retrieved Sources"):
                             for src in sources:
-                                st.markdown(
-                                    
-                                    unsafe_allow_html=True,
-                                )
-
-                    scroll_to_bottom()
-
+                                st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
                 except Exception as e:
                     st.error(f"Error generating response: {e}")
 
