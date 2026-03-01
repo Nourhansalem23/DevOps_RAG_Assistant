@@ -145,53 +145,61 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        /* Hero container – centers image both horizontally and vertically */
-        .hero-container {
+        /* Centered header container */
+        .centered-header {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 40vh;  /* Adjust this value to control vertical centering */
-            width: 100%;
-            margin-bottom: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
         }
-        .hero-container img {
-            max-width: 100%;
-            height: auto;
+        .centered-header .logo {
+            margin-bottom: 0.5rem;
+        }
+        .centered-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0.2rem 0;
+            color: #1E1E1E;
+        }
+        .centered-header .subtitle {
+            font-size: 1.1rem;
+            color: #4A4A4A;
+            margin-top: 0.2rem;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ----- HERO SECTION with centered image (base64 to avoid MediaFileStorageError) -----
+    # ----- HEADER with centered logo, title, and subtitle -----
     logo_path = "assets/unnamed.jpg"  # <-- place your image here
 
-    if os.path.exists(logo_path):
-        with open(logo_path, "rb") as img_file:
-            img_base64 = base64.b64encode(img_file.read()).decode()
+    with st.container():
+        st.markdown('<div class="centered-header">', unsafe_allow_html=True)
 
+        # Logo (small)
+        if os.path.exists(logo_path):
+            with open(logo_path, "rb") as img_file:
+                img_base64 = base64.b64encode(img_file.read()).decode()
+            st.markdown(
+                f'<div class="logo"><img src="data:image/jpeg;base64,{img_base64}" width="80"></div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            # Fallback if image missing
+            st.markdown('<div class="logo" style="font-size:48px;">🖼️</div>', unsafe_allow_html=True)
+
+        # Title
+        st.markdown("<h1>RAGOPS CHATBOT SOLUTIONS</h1>", unsafe_allow_html=True)
+
+        # Subtitle
         st.markdown(
-            f"""
-            <div class="hero-container">
-                <img src="data:image/jpeg;base64,{img_base64}" width="350">
-            </div>
-            """,
+            '<div class="subtitle">Upload your DevOps PDFs and ask questions — powered by <b>Qwen 2.5 7B</b> & <b>ChromaDB</b>.</div>',
             unsafe_allow_html=True,
         )
-    else:
-        # Fallback emoji if image is missing
-        st.markdown(
-            """
-            <div class="hero-container">
-                <div style="font-size:60px;">🖼️</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
-    # Subtitle directly below hero section
-    st.markdown("   Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Initialize chat history
     if "messages" not in st.session_state:
