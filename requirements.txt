@@ -1,11 +1,12 @@
-langchain
-langchain-community
+langchain>=0.3.0
+langchain-community>=0.3.0
 langchain-huggingface
 langchain-chroma
 langchain-ollama
-chromadb==0.5.23
+chromadb>=0.5.0
 streamlit
 pypdf
 sentence-transformers
 rapidocr-onnxruntime
+pydantic>=2.0
 pydantic-settings
