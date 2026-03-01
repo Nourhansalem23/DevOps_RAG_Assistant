@@ -23,37 +23,32 @@ def scroll_to_bottom():
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
-        // Scroll after a tiny delay to ensure new content is rendered
         setTimeout(scrollChat, 100);
         </script>
         """,
         height=0,
     )
+
 def main():
     st.title("☁️⚙️ DevOps RAG Assistant")
     st.write("Upload your DevOps PDFs and ask questions! Powered by Qwen 2.5 7B & ChromaDB.")
-     st.markdown(
+
+    # Custom CSS for blue theme
+    st.markdown(
         """
         <style>
-        /* Global accent color – buttons, borders, etc. */
         :root {
             --devops-blue: #007bff;
             --devops-blue-hover: #0056b3;
         }
-
-        /* Chat input placeholder (already blue) */
         .stChatInput textarea::placeholder {
             color: var(--devops-blue) !important;
             opacity: 0.8;
         }
-
-        /* Chat input focus border */
         .stChatInput textarea:focus {
             border-color: var(--devops-blue) !important;
             box-shadow: 0 0 0 1px var(--devops-blue) !important;
         }
-
-        /* All buttons – primary style */
         .stButton button {
             background-color: var(--devops-blue);
             color: white;
@@ -73,8 +68,6 @@ def main():
             background-color: var(--devops-blue-hover);
             transform: scale(0.98);
         }
-
-        /* Secondary buttons (like file uploader clear button) – optional */
         .stFileUploader button {
             background-color: white;
             color: var(--devops-blue);
@@ -83,14 +76,10 @@ def main():
         .stFileUploader button:hover {
             background-color: #e6f2ff;
         }
-
-        /* Multiselect focus border */
         .stMultiSelect [data-baseweb="select"]:focus-within {
             border-color: var(--devops-blue) !important;
             box-shadow: 0 0 0 1px var(--devops-blue) !important;
         }
-
-        /* Optional: style the info/warning boxes to match */
         .stAlert {
             border-left-color: var(--devops-blue) !important;
         }
@@ -98,92 +87,59 @@ def main():
         """,
         unsafe_allow_html=True,
     )
+
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
-        
+
+    # Sidebar
     with st.sidebar:
-    # --- Document Management Section ---
-    st.markdown("## 📁 **Document Management**")
-    st.caption("Upload your DevOps PDFs (max 200MB each).")
-    
-    uploaded_files = st.file_uploader(
-        "Choose PDF files",
-        type="pdf",
-        accept_multiple_files=True,
-        help="Drag and drop or click to select multiple PDFs."
-    )
-    
-    # Styled process button (CSS will be added globally later)
-    if st.button("⚙️ Process Documents", use_container_width=True):
-        if uploaded_files:
-            if not os.path.exists(DATA_DIR):
-                os.makedirs(DATA_DIR)
-            with st.spinner("Saving files and building vector index..."):
-                for file in uploaded_files:
-                    file_path = os.path.join(DATA_DIR, file.name)
-                    with open(file_path, "wb") as f:
-                        f.write(file.getbuffer())
-                try:
-                    ingest_documents()
-                    st.success("✅ Documents processed successfully!")
-                except Exception as e:
-                    st.error(f"Error during processing: {e}")
-        else:
-            st.warning("Please upload some PDFs first.")
-    
-    st.divider()
-    
-    # --- Active Documents Section ---
-    st.markdown("## 📄 **Active Documents**")
-    st.caption("Select which documents to query against. Unchecked ones will be ignored.")
-    
-    available_docs = list_uploaded_pdfs()
-    active_docs = st.multiselect(
-        "Documents to search",
-        options=available_docs,
-        default=available_docs,
-        help="Only the selected PDFs will be used when answering your questions."
-    )
-    
-    # Optional: show a small summary
-    if active_docs:
-        st.info(f"🔍 Searching **{len(active_docs)}** document(s).")
-    else:
-        st.warning("⚠️ No documents selected – please select at least one.")
-    
-    st.divider()
-    
-    # --- Active Documents Section ---
-    st.markdown("## 📄 **Active Documents**")
-    st.caption("Select which documents to query against. Unchecked ones will be ignored.")
-    
-    available_docs = list_uploaded_pdfs()
-    active_docs = st.multiselect(
-        "Documents to search",
-        options=available_docs,
-        default=available_docs,
-        help="Only the selected PDFs will be used when answering your questions."
-    )
-    
-    # Optional: show a small summary
-    if active_docs:
-        st.info(f"🔍 Searching **{len(active_docs)}** document(s).")
-    else:
-        st.warning("⚠️ No documents selected – please select at least one.")
-                
+        # Document Management Section
+        st.markdown("## 📁 **Document Management**")
+        st.caption("Upload your DevOps PDFs (max 200MB each).")
+
+        uploaded_files = st.file_uploader(
+            "Choose PDF files",
+            type="pdf",
+            accept_multiple_files=True,
+            help="Drag and drop or click to select multiple PDFs."
+        )
+
+        if st.button("⚙️ Process Documents", use_container_width=True):
+            if uploaded_files:
+                if not os.path.exists(DATA_DIR):
+                    os.makedirs(DATA_DIR)
+                with st.spinner("Saving files and building vector index..."):
+                    for file in uploaded_files:
+                        file_path = os.path.join(DATA_DIR, file.name)
+                        with open(file_path, "wb") as f:
+                            f.write(file.getbuffer())
+                    try:
+                        ingest_documents()
+                        st.success("✅ Documents processed successfully!")
+                    except Exception as e:
+                        st.error(f"Error during processing: {e}")
+            else:
+                st.warning("Please upload some PDFs first.")
+
         st.divider()
-        st.header("Active Documents")
-        st.write("Select which PDFs to query against.")
+
+        # Active Documents Section
+        st.markdown("## 📄 **Active Documents**")
+        st.caption("Select which documents to query against. Unchecked ones will be ignored.")
+
         available_docs = list_uploaded_pdfs()
-        
-        # User explicitly chooses the active documents
         active_docs = st.multiselect(
-            "Select Active Documents",
+            "Documents to search",
             options=available_docs,
             default=available_docs,
-            help="Queries will only search these selected documents. Unselect documents you want to ignore."
+            help="Only the selected PDFs will be used when answering your questions."
         )
+
+        if active_docs:
+            st.info(f"🔍 Searching **{len(active_docs)}** document(s).")
+        else:
+            st.warning("⚠️ No documents selected – please select at least one.")
 
     # Display chat messages
     for message in st.session_state.messages:
@@ -193,39 +149,43 @@ def main():
                 with st.expander("View Retrieved Sources"):
                     for src in message["sources"]:
                         st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
-                        
+
     # Chat input
     if prompt := st.chat_input("What is your DevOps question?"):
-        
         if not active_docs:
             st.warning("Please select at least one Active Document from the sidebar before asking a question.")
-            return
+            st.stop()
 
-        # Add to history
+        # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-            
+        scroll_to_bottom()  # Scroll after user message
+
+        # Generate assistant response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
                     response, sources = ask_question(prompt, active_docs)
                     st.markdown(response)
-                    
-                    # Persist response and sources in history
+
+                    # Store response
                     st.session_state.messages.append({
-                        "role": "assistant", 
+                        "role": "assistant",
                         "content": response,
                         "sources": sources
                     })
-                    
+
                     if sources:
                         with st.expander("View Retrieved Sources"):
                             for src in sources:
                                 st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
+
+                    # Scroll to bottom after assistant reply
+                    scroll_to_bottom()
+
                 except Exception as e:
                     st.error(f"Error generating response: {e}")
-                scroll_to_bottom()
 
 if __name__ == "__main__":
     main()
