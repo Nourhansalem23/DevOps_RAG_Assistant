@@ -165,7 +165,7 @@ def main():
     )
 
     # ----- HERO SECTION with centered image (base64 to avoid MediaFileStorageError) -----
-    logo_path = "unnamed.png"  # <-- place your image here
+    logo_path = "unnamed.jpeg"  # <-- place your image here
 
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as img_file:
