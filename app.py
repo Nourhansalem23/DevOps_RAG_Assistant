@@ -12,6 +12,23 @@ def list_uploaded_pdfs():
         return []
     return [f for f in os.listdir(DATA_DIR) if f.endswith('.pdf')]
 
+def scroll_to_bottom():
+    """Inject JavaScript to scroll the chat container to the bottom."""
+    st.components.v1.html(
+        """
+        <script>
+        function scrollChat() {
+            const chatContainer = document.querySelector('.stChatMessageContainer');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+        // Scroll after a tiny delay to ensure new content is rendered
+        setTimeout(scrollChat, 100);
+        </script>
+        """,
+        height=0,
+    )
 def main():
     st.title("🤖 DevOps RAG Assistant")
     st.write("Upload your DevOps PDFs and ask questions! Powered by Qwen 2.5 7B & ChromaDB.")
@@ -96,6 +113,7 @@ def main():
                                 st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
                 except Exception as e:
                     st.error(f"Error generating response: {e}")
+                scroll_to_bottom()
 
 if __name__ == "__main__":
     main()
