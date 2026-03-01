@@ -160,14 +160,14 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER with centered large image (no title) -----
-    logo_path = "assets/unnamed.jpg"   # <-- place your image here (resize to ~200x200, keep under 1MB)
+    # ----- HEADER with centered LARGE image (no title) -----
+    logo_path = "assets/unnamed.jpg"   # <-- place your image here (resize if needed, but we set width=300)
 
     with st.container():
         st.markdown('<div class="centered-header">', unsafe_allow_html=True)
         if os.path.exists(logo_path):
-            # Display image larger and centered
-            st.image(logo_path, width=200)  # increased size
+            # Display image larger and centered – adjust width as you like
+            st.image(logo_path, width=300)  # <-- BIGGER!
         else:
             # Optional fallback: show nothing or an emoji
             st.markdown("🖼️")  # placeholder if image missing
