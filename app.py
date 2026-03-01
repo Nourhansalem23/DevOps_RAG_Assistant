@@ -144,36 +144,39 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        /* Center header content – only image now */
-        .centered-header {
+        /* Hero container – centers image both horizontally and vertically */
+        .hero-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center;
-            margin-bottom: 0.5rem;
+            justify-content: center;
+            min-height: 40vh;  /* Adjust this value to control vertical centering */
+            width: 100%;
+            margin-bottom: 1rem;
         }
-        .centered-header img {
-            margin-bottom: 0.5rem;
+        .hero-container img {
+            max-width: 100%;
+            height: auto;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ----- HEADER with centered LARGE image (no title) -----
-    logo_path = "assets/unnamed.jpg"   # <-- place your image here 
+    # ----- HERO SECTION with centered image -----
+    logo_path = "assets/unnamed.jpg"   # <-- place your image here
 
     with st.container():
-        st.markdown('<div class="centered">', unsafe_allow_html=True)
+        st.markdown('<div class="hero-container">', unsafe_allow_html=True)
         if os.path.exists(logo_path):
-            
-            st.image(logo_path, width=400)  
+            # Image is automatically centered by flexbox
+            st.image(logo_path, width=350)  # adjust width as needed
         else:
             # Optional fallback: show nothing or an emoji
             st.markdown("🖼️")  # placeholder if image missing
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Subtitle directly after image
+    # Subtitle directly below hero section
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
