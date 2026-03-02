@@ -33,7 +33,7 @@ def scroll_to_bottom():
     )
 
 def main():
-    # ----- CUSTOM CSS (Blue theme + UI polish) -----
+    # ----- CUSTOM CSS (Blue theme + UI polish, no white cards) -----
     st.markdown(
         """
         <style>
@@ -41,7 +41,6 @@ def main():
             --devops-blue: #007bff;
             --devops-blue-hover: #0056b3;
             --light-bg: #f8f9fa;
-            --border-radius: 12px;
         }
         /* Multiselect tags – blue */
         .stMultiSelect [data-baseweb="tag"] {
@@ -68,7 +67,7 @@ def main():
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         [data-testid="chat-message-user"] {
-            background-color: #e6f2ff;  /* light blue */
+            background-color: #e6f2ff;
             align-self: flex-end;
             margin-left: auto;
             border-bottom-right-radius: 4px !important;
@@ -82,15 +81,6 @@ def main():
         /* Smooth scrolling container */
         .stChatMessageContainer {
             scroll-behavior: smooth;
-        }
-        /* Sidebar cards */
-        .sidebar-section {
-            background-color: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border: 1px solid #f0f0f0;
         }
         /* Buttons */
         .stButton button {
@@ -130,11 +120,51 @@ def main():
             color: #007bff !important;
             opacity: 0.8;
         }
-        /* Chat input border on focus – blue */
+        /* Chat input border on focus */
         div.stChatInput textarea:focus {
             border-color: #007bff !important;
             box-shadow: 0 0 0 1px #007bff !important;
             outline: none !important;
+        }
+        /* Thinking animation – no dimming */
+        .thinking-dots {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .dot-flashing {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: #007bff;
+            animation: dot-flashing 1s infinite linear alternate;
+            animation-delay: 0.5s;
+        }
+        .dot-flashing::before,
+        .dot-flashing::after {
+            content: "";
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: #007bff;
+            animation: dot-flashing 1s infinite alternate;
+        }
+        .dot-flashing::before {
+            left: -15px;
+            animation-delay: 0s;
+        }
+        .dot-flashing::after {
+            left: 15px;
+            animation-delay: 1s;
+        }
+        @keyframes dot-flashing {
+            0% { background-color: #007bff; }
+            50%, 100% { background-color: rgba(0,123,255,0.2); }
         }
         /* Footer */
         .footer {
@@ -145,13 +175,13 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        /* Hero container – centers image both horizontally and vertically */
+        /* Hero container – centered image */
         .hero-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 40vh;  /* Adjust this value to control vertical centering */
+            min-height: 40vh;
             width: 100%;
             margin-bottom: 1rem;
         }
@@ -159,18 +189,24 @@ def main():
             max-width: 100%;
             height: auto;
         }
+        /* Remove extra white backgrounds from sidebar sections */
+        .sidebar-section {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin-bottom: 1rem !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ----- HERO SECTION with centered image (base64 to avoid MediaFileStorageError) -----
-    logo_path = "assets/logo.png"  # <-- place your image here
-
+    # ----- HERO SECTION with centered image -----
+    logo_path = "assets/logo.png"
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as img_file:
             img_base64 = base64.b64encode(img_file.read()).decode()
-
         st.markdown(
             f"""
             <div class="hero-container">
@@ -180,7 +216,6 @@ def main():
             unsafe_allow_html=True,
         )
     else:
-        # Fallback emoji if image is missing
         st.markdown(
             """
             <div class="hero-container">
@@ -190,18 +225,16 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # Subtitle directly below hero section
-    st.markdown("  ")
+    # Subtitle
+    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # ----- SIDEBAR (with cards + persistent file list) -----
+    # ----- SIDEBAR (no white cards) -----
     with st.sidebar:
-        # Document Management card
-        st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown("#### 📁 **Document Management**")
+        st.markdown("### 📁 Document Management")
         st.caption("Upload your DevOps PDFs (max 200MB each).")
 
         uploaded_files = st.file_uploader(
@@ -216,14 +249,12 @@ def main():
         if uploaded_files:
             st.session_state.uploaded_files = uploaded_files
 
-        # Display the list of currently selected files (if any)
         if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
             st.markdown("**Selected files:**")
             for file in st.session_state.uploaded_files:
                 st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
 
         if st.button("⚙️ Process Documents", use_container_width=True):
-            # Use files from session state or directly from uploader
             files_to_process = st.session_state.get("uploaded_files", uploaded_files)
             if files_to_process:
                 if not os.path.exists(DATA_DIR):
@@ -236,18 +267,15 @@ def main():
                     try:
                         ingest_documents()
                         st.success("✅ Documents processed successfully!")
-                        # Optional: clear the file list after processing
-                        # del st.session_state.uploaded_files
                     except Exception as e:
                         st.error(f"Error during processing: {e}")
             else:
                 st.warning("Please upload some PDFs first.")
-        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Active Documents card
-        st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown("#### 📄 **Active Documents**")
-        st.caption("Select which documents to query against. Unchecked ones will be ignored.")
+        st.divider()
+
+        st.markdown("### 📄 Active Documents")
+        st.caption("Select which documents to query against.")
 
         available_docs = list_uploaded_pdfs()
         active_docs = st.multiselect(
@@ -261,23 +289,15 @@ def main():
             st.info(f"🔍 Searching **{len(active_docs)}** document(s).")
         else:
             st.warning("⚠️ No documents selected – please select at least one.")
-        st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----- CHAT HISTORY (fixed sources variable) -----
+    # ----- CHAT HISTORY (simple source display) -----
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            if message.get("sources"):  # ✅ FIX: use message.get("sources") instead of undefined variable
+            if message.get("sources"):
                 with st.expander("📚 Retrieved Sources"):
                     for src in message["sources"]:
-                        st.markdown(
-                            f"""
-                            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
+                        st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page', '?')}")
 
     # ----- CHAT INPUT -----
     if prompt := st.chat_input("What is your DevOps question?"):
@@ -291,37 +311,40 @@ def main():
             st.markdown(prompt)
         scroll_to_bottom()
 
-        # Generate assistant response
+        # Generate assistant response (no dimming spinner)
         with st.chat_message("assistant"):
-            with st.spinner("💭 Thinking..."):
-                try:
-                    response, sources = ask_question(prompt, active_docs)
+            thinking_placeholder = st.empty()
+            thinking_placeholder.markdown(
+                '<div style="display: flex; align-items: center; gap: 8px; color: #007bff;">'
+                '<span class="thinking-dots">💭 Thinking</span>'
+                '<div class="dot-flashing"></div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
 
-                    st.markdown(response)
+            try:
+                response, sources = ask_question(prompt, active_docs)
 
-                    # Store response
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": response,
-                        "sources": sources
-                    })
+                thinking_placeholder.empty()
+                st.markdown(response)
 
-                    if sources:
-                        with st.expander("📚 Retrieved Sources"):
-                            for src in sources:
-                                st.markdown(
-                                    f"""
-                                    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                        <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True,
-                                )
+                # Store response
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": response,
+                    "sources": sources
+                })
 
-                    scroll_to_bottom()
+                if sources:
+                    with st.expander("📚 Retrieved Sources"):
+                        for src in sources:
+                            st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page', '?')}")
 
-                except Exception as e:
-                    st.error(f"Error generating response: {e}")
+                scroll_to_bottom()
+
+            except Exception as e:
+                thinking_placeholder.empty()
+                st.error(f"Error generating response: {e}")
 
     # ----- FOOTER -----
     st.markdown(
