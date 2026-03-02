@@ -33,6 +33,12 @@ def scroll_to_bottom():
     )
 
 def main():
+    # Ensure session state is ready
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "uploaded_files" not in st.session_state:
+        st.session_state.uploaded_files = []
+
     # ----- CUSTOM CSS (Blue theme + UI polish) -----
     st.markdown(
         """
@@ -228,10 +234,6 @@ def main():
     # Subtitle
     st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
     # ----- SIDEBAR (with robust file handling) -----
     with st.sidebar:
         st.markdown("### 📁 Document Management")
@@ -250,14 +252,13 @@ def main():
             st.session_state.uploaded_files = uploaded_files
 
         # Display the list of currently selected files (if any)
-        if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
+        if st.session_state.uploaded_files:
             st.markdown("**Selected files:**")
             for file in st.session_state.uploaded_files:
                 st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
 
         if st.button("⚙️ Process Documents", use_container_width=True):
-            # Use files from session state or directly from uploader
-            files_to_process = st.session_state.get("uploaded_files", uploaded_files)
+            files_to_process = st.session_state.uploaded_files
             if files_to_process:
                 if not os.path.exists(DATA_DIR):
                     os.makedirs(DATA_DIR)
@@ -329,7 +330,7 @@ def main():
             thinking_placeholder = st.empty()
             thinking_placeholder.markdown(
                 '<div style="display: flex; align-items: center; gap: 8px; color: #007bff;">'
-                '<span class="thinking-dots">💭 Thinking</span>'
+                '<span class="thinking-dots">💭 Thinking (may take 10–30 seconds)</span>'
                 '<div class="dot-flashing"></div>'
                 '</div>',
                 unsafe_allow_html=True,
