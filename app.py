@@ -33,7 +33,7 @@ def scroll_to_bottom():
     )
 
 def main():
-    # Ensure session state is ready
+    # ----- Initialize session state at the very beginning -----
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "uploaded_files" not in st.session_state:
@@ -232,7 +232,7 @@ def main():
         )
 
     # Subtitle
-    st.markdown("")
+    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
 
     # ----- SIDEBAR (with robust file handling) -----
     with st.sidebar:
@@ -330,7 +330,7 @@ def main():
             thinking_placeholder = st.empty()
             thinking_placeholder.markdown(
                 '<div style="display: flex; align-items: center; gap: 8px; color: #007bff;">'
-                '<span class="thinking-dots">💭 Thinking (may take 10–30 seconds)</span>'
+                '<span class="thinking-dots">💭 </span>'
                 '<div class="dot-flashing"></div>'
                 '</div>',
                 unsafe_allow_html=True,
