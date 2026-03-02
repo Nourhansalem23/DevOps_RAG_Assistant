@@ -232,7 +232,7 @@ def main():
         )
 
     # Subtitle
-    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+    st.markdown("")
 
     # ----- SIDEBAR (with robust file handling) -----
     with st.sidebar:
