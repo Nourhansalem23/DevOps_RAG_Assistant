@@ -234,43 +234,53 @@ def main():
 
     # ----- SIDEBAR (no white cards) -----
     with st.sidebar:
-        st.markdown("### 📁 Document Management")
-        st.caption("Upload your DevOps PDFs (max 200MB each).")
+    st.markdown("### 📁 Document Management")
+    st.caption("Upload your DevOps PDFs (max 200MB each).")
 
-        uploaded_files = st.file_uploader(
-            "Choose PDF files",
-            type="pdf",
-            accept_multiple_files=True,
-            key="pdf_uploader",
-            help="Drag and drop or click to select multiple PDFs."
-        )
+    uploaded_files = st.file_uploader(
+        "Choose PDF files",
+        type="pdf",
+        accept_multiple_files=True,
+        key="pdf_uploader",
+        help="Drag and drop or click to select multiple PDFs."
+    )
 
-        # Store uploaded files in session state for persistence
-        if uploaded_files:
-            st.session_state.uploaded_files = uploaded_files
+    # Store uploaded files in session state for persistence
+    if uploaded_files:
+        st.session_state.uploaded_files = uploaded_files
 
-        if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
-            st.markdown("**Selected files:**")
-            for file in st.session_state.uploaded_files:
-                st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
+    # Display the list of currently selected files (if any)
+    if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
+        st.markdown("**Selected files:**")
+        for file in st.session_state.uploaded_files:
+            st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
 
-        if st.button("⚙️ Process Documents", use_container_width=True):
-            files_to_process = st.session_state.get("uploaded_files", uploaded_files)
-            if files_to_process:
-                if not os.path.exists(DATA_DIR):
-                    os.makedirs(DATA_DIR)
-                with st.spinner("Saving files and building vector index..."):
-                    for file in files_to_process:
+    if st.button("⚙️ Process Documents", use_container_width=True):
+        # Use files from session state or directly from uploader
+        files_to_process = st.session_state.get("uploaded_files", uploaded_files)
+        if files_to_process:
+            if not os.path.exists(DATA_DIR):
+                os.makedirs(DATA_DIR)
+            with st.spinner("Saving files and building vector index..."):
+                success_count = 0
+                for file in files_to_process:
+                    try:
                         file_path = os.path.join(DATA_DIR, file.name)
                         with open(file_path, "wb") as f:
                             f.write(file.getbuffer())
+                        success_count += 1
+                    except Exception as e:
+                        st.error(f"Failed to save {file.name}: {e}")
+                if success_count > 0:
                     try:
                         ingest_documents()
-                        st.success("✅ Documents processed successfully!")
+                        st.success(f"✅ {success_count} document(s) processed successfully!")
                     except Exception as e:
-                        st.error(f"Error during processing: {e}")
-            else:
-                st.warning("Please upload some PDFs first.")
+                        st.error(f"Error during ingestion: {e}")
+                else:
+                    st.warning("No files could be saved.")
+        else:
+            st.warning("Please upload some PDFs first.")
 
         st.divider()
 
