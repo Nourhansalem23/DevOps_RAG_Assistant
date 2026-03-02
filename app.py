@@ -33,7 +33,7 @@ def scroll_to_bottom():
     )
 
 def main():
-    # ----- CUSTOM CSS (Blue theme + UI polish, no white cards) -----
+    # ----- CUSTOM CSS (Blue theme + UI polish) -----
     st.markdown(
         """
         <style>
@@ -232,55 +232,55 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # ----- SIDEBAR (no white cards) -----
+    # ----- SIDEBAR (with robust file handling) -----
     with st.sidebar:
-    st.markdown("### 📁 Document Management")
-    st.caption("Upload your DevOps PDFs (max 200MB each).")
+        st.markdown("### 📁 Document Management")
+        st.caption("Upload your DevOps PDFs (max 200MB each).")
 
-    uploaded_files = st.file_uploader(
-        "Choose PDF files",
-        type="pdf",
-        accept_multiple_files=True,
-        key="pdf_uploader",
-        help="Drag and drop or click to select multiple PDFs."
-    )
+        uploaded_files = st.file_uploader(
+            "Choose PDF files",
+            type="pdf",
+            accept_multiple_files=True,
+            key="pdf_uploader",
+            help="Drag and drop or click to select multiple PDFs."
+        )
 
-    # Store uploaded files in session state for persistence
-    if uploaded_files:
-        st.session_state.uploaded_files = uploaded_files
+        # Store uploaded files in session state for persistence
+        if uploaded_files:
+            st.session_state.uploaded_files = uploaded_files
 
-    # Display the list of currently selected files (if any)
-    if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
-        st.markdown("**Selected files:**")
-        for file in st.session_state.uploaded_files:
-            st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
+        # Display the list of currently selected files (if any)
+        if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
+            st.markdown("**Selected files:**")
+            for file in st.session_state.uploaded_files:
+                st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
 
-    if st.button("⚙️ Process Documents", use_container_width=True):
-        # Use files from session state or directly from uploader
-        files_to_process = st.session_state.get("uploaded_files", uploaded_files)
-        if files_to_process:
-            if not os.path.exists(DATA_DIR):
-                os.makedirs(DATA_DIR)
-            with st.spinner("Saving files and building vector index..."):
-                success_count = 0
-                for file in files_to_process:
-                    try:
-                        file_path = os.path.join(DATA_DIR, file.name)
-                        with open(file_path, "wb") as f:
-                            f.write(file.getbuffer())
-                        success_count += 1
-                    except Exception as e:
-                        st.error(f"Failed to save {file.name}: {e}")
-                if success_count > 0:
-                    try:
-                        ingest_documents()
-                        st.success(f"✅ {success_count} document(s) processed successfully!")
-                    except Exception as e:
-                        st.error(f"Error during ingestion: {e}")
-                else:
-                    st.warning("No files could be saved.")
-        else:
-            st.warning("Please upload some PDFs first.")
+        if st.button("⚙️ Process Documents", use_container_width=True):
+            # Use files from session state or directly from uploader
+            files_to_process = st.session_state.get("uploaded_files", uploaded_files)
+            if files_to_process:
+                if not os.path.exists(DATA_DIR):
+                    os.makedirs(DATA_DIR)
+                with st.spinner("Saving files and building vector index..."):
+                    success_count = 0
+                    for file in files_to_process:
+                        try:
+                            file_path = os.path.join(DATA_DIR, file.name)
+                            with open(file_path, "wb") as f:
+                                f.write(file.getbuffer())
+                            success_count += 1
+                        except Exception as e:
+                            st.error(f"Failed to save {file.name}: {e}")
+                    if success_count > 0:
+                        try:
+                            ingest_documents()
+                            st.success(f"✅ {success_count} document(s) processed successfully!")
+                        except Exception as e:
+                            st.error(f"Error during ingestion: {e}")
+                    else:
+                        st.warning("No files could be saved.")
+            else:
+                st.warning("Please upload some PDFs first.")
 
         st.divider()
 
@@ -300,14 +300,17 @@ def main():
         else:
             st.warning("⚠️ No documents selected – please select at least one.")
 
-    # ----- CHAT HISTORY (simple source display) -----
+    # ----- CHAT HISTORY -----
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            content = message.get("content", "")
+            st.markdown(content)
             if message.get("sources"):
                 with st.expander("📚 Retrieved Sources"):
                     for src in message["sources"]:
-                        st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page', '?')}")
+                        doc_title = src.get('doc_title', 'Unknown')
+                        page = src.get('page', '?')
+                        st.caption(f"Doc: {doc_title} | Page: {page}")
 
     # ----- CHAT INPUT -----
     if prompt := st.chat_input("What is your DevOps question?"):
@@ -335,8 +338,16 @@ def main():
             try:
                 response, sources = ask_question(prompt, active_docs)
 
+                # Ensure response is a string
+                if not isinstance(response, str):
+                    response = str(response) if response is not None else "No response generated."
+
                 thinking_placeholder.empty()
                 st.markdown(response)
+
+                # Ensure sources is a list
+                if sources is None:
+                    sources = []
 
                 # Store response
                 st.session_state.messages.append({
@@ -348,7 +359,9 @@ def main():
                 if sources:
                     with st.expander("📚 Retrieved Sources"):
                         for src in sources:
-                            st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page', '?')}")
+                            doc_title = src.get('doc_title', 'Unknown')
+                            page = src.get('page', '?')
+                            st.caption(f"Doc: {doc_title} | Page: {page}")
 
                 scroll_to_bottom()
 
