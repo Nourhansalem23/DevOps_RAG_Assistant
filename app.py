@@ -39,7 +39,7 @@ def main():
     if "uploaded_files" not in st.session_state:
         st.session_state.uploaded_files = []
 
-    # ----- CUSTOM CSS (Blue theme + UI polish) -----
+    # ----- CUSTOM CSS (Blue theme + UI polish + hide default Streamlit spinner) -----
     st.markdown(
         """
         <style>
@@ -47,6 +47,10 @@ def main():
             --devops-blue: #007bff;
             --devops-blue-hover: #0056b3;
             --light-bg: #f8f9fa;
+        }
+        /* Hide default Streamlit status spinner (prevents brightness flicker) */
+        .stAppStatus, #stStatusWidget, .stDeployButton {
+            display: none !important;
         }
         /* Multiselect tags – blue */
         .stMultiSelect [data-baseweb="tag"] {
@@ -232,7 +236,7 @@ def main():
         )
 
     # Subtitle
-    st.markdown("Upload your DevOps PDFs and ask questions — powered by **Qwen 2.5 7B** & **ChromaDB**.")
+    st.markdown("")
 
     # ----- SIDEBAR (with robust file handling) -----
     with st.sidebar:
@@ -330,7 +334,7 @@ def main():
             thinking_placeholder = st.empty()
             thinking_placeholder.markdown(
                 '<div style="display: flex; align-items: center; gap: 8px; color: #007bff;">'
-                '<span class="thinking-dots">💭 </span>'
+                '<span class="thinking-dots">💭Thinking... </span>'
                 '<div class="dot-flashing"></div>'
                 '</div>',
                 unsafe_allow_html=True,
@@ -339,16 +343,18 @@ def main():
             try:
                 response, sources = ask_question(prompt, active_docs)
 
-                # Ensure response is a string
-                if not isinstance(response, str):
-                    response = str(response) if response is not None else "No response generated."
-
-                thinking_placeholder.empty()
-                st.markdown(response)
+                # Ensure response is a non-empty string
+                if not response:
+                    response = "I couldn't find an answer in the selected documents. Please try rephrasing or check your document selection."
+                elif not isinstance(response, str):
+                    response = str(response)
 
                 # Ensure sources is a list
                 if sources is None:
                     sources = []
+
+                thinking_placeholder.empty()
+                st.markdown(response)
 
                 # Store response
                 st.session_state.messages.append({
@@ -369,6 +375,12 @@ def main():
             except Exception as e:
                 thinking_placeholder.empty()
                 st.error(f"Error generating response: {e}")
+                # Optionally store a fallback message
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": "Sorry, an error occurred while processing your question.",
+                    "sources": []
+                })
 
     # ----- FOOTER -----
     st.markdown(
