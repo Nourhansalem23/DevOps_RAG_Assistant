@@ -197,7 +197,7 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # ----- SIDEBAR (with cards) -----
+    # ----- SIDEBAR (with cards + persistent file list) -----
     with st.sidebar:
         # Document Management card
         st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
@@ -208,21 +208,36 @@ def main():
             "Choose PDF files",
             type="pdf",
             accept_multiple_files=True,
+            key="pdf_uploader",
             help="Drag and drop or click to select multiple PDFs."
         )
 
+        # Store uploaded files in session state for persistence
+        if uploaded_files:
+            st.session_state.uploaded_files = uploaded_files
+
+        # Display the list of currently selected files (if any)
+        if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
+            st.markdown("**Selected files:**")
+            for file in st.session_state.uploaded_files:
+                st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
+
         if st.button("⚙️ Process Documents", use_container_width=True):
-            if uploaded_files:
+            # Use files from session state or directly from uploader
+            files_to_process = st.session_state.get("uploaded_files", uploaded_files)
+            if files_to_process:
                 if not os.path.exists(DATA_DIR):
                     os.makedirs(DATA_DIR)
                 with st.spinner("Saving files and building vector index..."):
-                    for file in uploaded_files:
+                    for file in files_to_process:
                         file_path = os.path.join(DATA_DIR, file.name)
                         with open(file_path, "wb") as f:
                             f.write(file.getbuffer())
                     try:
                         ingest_documents()
                         st.success("✅ Documents processed successfully!")
+                        # Optional: clear the file list after processing
+                        # del st.session_state.uploaded_files
                     except Exception as e:
                         st.error(f"Error during processing: {e}")
             else:
@@ -248,14 +263,21 @@ def main():
             st.warning("⚠️ No documents selected – please select at least one.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----- CHAT HISTORY -----
+    # ----- CHAT HISTORY (fixed sources variable) -----
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            if sources:
-                        with st.expander("View Retrieved Sources"):
-                            for src in sources:
-                                st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
+            if message.get("sources"):  # ✅ FIX: use message.get("sources") instead of undefined variable
+                with st.expander("📚 Retrieved Sources"):
+                    for src in message["sources"]:
+                        st.markdown(
+                            f"""
+                            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
+                                <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
     # ----- CHAT INPUT -----
     if prompt := st.chat_input("What is your DevOps question?"):
