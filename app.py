@@ -165,7 +165,7 @@ def main():
     )
 
     # ----- HERO SECTION with centered image (base64 to avoid MediaFileStorageError) -----
-    logo_path = "assets/unnamed.jpeg"  # <-- place your image here
+    logo_path = "assets/logo.png"  # <-- place your image here
 
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as img_file:
@@ -252,17 +252,10 @@ def main():
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            if "sources" in message and message["sources"]:
-                with st.expander("📚 Retrieved Sources"):
-                    for src in message["sources"]:
-                        st.markdown(
-                            f"""
-                            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid #007bff;">
-                                <b>{src.get('doc_title', 'Unknown')}</b>  ·  Page {src.get('page', '?')}
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
+            if sources:
+                        with st.expander("View Retrieved Sources"):
+                            for src in sources:
+                                st.caption(f"Doc: {src.get('doc_title', 'Unknown')} | Page: {src.get('page')}")
 
     # ----- CHAT INPUT -----
     if prompt := st.chat_input("What is your DevOps question?"):
