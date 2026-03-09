@@ -36,10 +36,11 @@ def main():
     # ----- Initialize session state at the very beginning -----
     if "messages" not in st.session_state:
         st.session_state.messages = []
-    if "uploaded_files" not in st.session_state:
-        st.session_state.uploaded_files = []
+    # FIX: Store file bytes immediately (not the file objects, which go stale on rerun)
+    if "saved_file_bytes" not in st.session_state:
+        st.session_state.saved_file_bytes = {}  # {filename: bytes}
 
-    # ----- CUSTOM CSS (Blue theme + UI polish + hide default Streamlit spinner) -----
+    # ----- CUSTOM CSS -----
     st.markdown(
         """
         <style>
@@ -48,11 +49,9 @@ def main():
             --devops-blue-hover: #0056b3;
             --light-bg: #f8f9fa;
         }
-        /* Hide default Streamlit status spinner (prevents brightness flicker) */
         .stAppStatus, #stStatusWidget, .stDeployButton {
             display: none !important;
         }
-        /* Multiselect tags – blue */
         .stMultiSelect [data-baseweb="tag"] {
             background-color: var(--devops-blue) !important;
             color: white !important;
@@ -67,7 +66,6 @@ def main():
         .stMultiSelect [data-baseweb="tag"] button:hover {
             opacity: 1;
         }
-        /* Chat messages */
         .stChatMessage {
             border-radius: 18px !important;
             padding: 10px 16px !important;
@@ -88,11 +86,9 @@ def main():
             align-self: flex-start;
             border-bottom-left-radius: 4px !important;
         }
-        /* Smooth scrolling container */
         .stChatMessageContainer {
             scroll-behavior: smooth;
         }
-        /* Buttons */
         .stButton button {
             background-color: var(--devops-blue);
             color: white;
@@ -106,7 +102,6 @@ def main():
             background-color: var(--devops-blue-hover);
             box-shadow: 0 4px 10px rgba(0,123,255,0.2);
         }
-        /* File uploader button */
         .stFileUploader button {
             background-color: white;
             color: var(--devops-blue);
@@ -115,28 +110,23 @@ def main():
         .stFileUploader button:hover {
             background-color: #e6f2ff;
         }
-        /* Input focus */
         .stChatInput textarea:focus,
         .stMultiSelect [data-baseweb="select"]:focus-within {
             border-color: var(--devops-blue) !important;
             box-shadow: 0 0 0 1px var(--devops-blue) !important;
         }
-        /* Info/warning boxes */
         .stAlert {
             border-left-color: var(--devops-blue) !important;
         }
-        /* Blue placeholder text */
         div.stChatInput textarea::placeholder {
             color: #007bff !important;
             opacity: 0.8;
         }
-        /* Chat input border on focus */
         div.stChatInput textarea:focus {
             border-color: #007bff !important;
             box-shadow: 0 0 0 1px #007bff !important;
             outline: none !important;
         }
-        /* Thinking animation – no dimming */
         .thinking-dots {
             font-size: 1rem;
             font-weight: 500;
@@ -176,7 +166,6 @@ def main():
             0% { background-color: #007bff; }
             50%, 100% { background-color: rgba(0,123,255,0.2); }
         }
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -185,7 +174,6 @@ def main():
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        /* Hero container – centered image */
         .hero-container {
             display: flex;
             flex-direction: column;
@@ -199,7 +187,6 @@ def main():
             max-width: 100%;
             height: auto;
         }
-        /* Remove extra white backgrounds from sidebar sections */
         .sidebar-section {
             background: transparent !important;
             border: none !important;
@@ -212,7 +199,7 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # ----- HERO SECTION with centered image -----
+    # ----- HERO SECTION -----
     logo_path = "assets/logo.png"
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as img_file:
@@ -235,10 +222,9 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # Subtitle
     st.markdown("")
 
-    # ----- SIDEBAR (with robust file handling) -----
+    # ----- SIDEBAR -----
     with st.sidebar:
         st.markdown("### 📁 Document Management")
         st.caption("Upload your DevOps PDFs (max 200MB each).")
@@ -251,31 +237,43 @@ def main():
             help="Drag and drop or click to select multiple PDFs."
         )
 
-        # Store uploaded files in session state for persistence
+        # ✅ FIX: Read file bytes IMMEDIATELY while the file objects are still fresh.
+        # Store bytes in session_state so they survive reruns.
         if uploaded_files:
-            st.session_state.uploaded_files = uploaded_files
+            for file in uploaded_files:
+                if file.name not in st.session_state.saved_file_bytes:
+                    try:
+                        st.session_state.saved_file_bytes[file.name] = file.read()
+                    except Exception as e:
+                        st.error(f"Could not read {file.name}: {e}")
 
-        # Display the list of currently selected files (if any)
-        if st.session_state.uploaded_files:
+        # Show all files whose bytes we have saved
+        if st.session_state.saved_file_bytes:
             st.markdown("**Selected files:**")
-            for file in st.session_state.uploaded_files:
-                st.markdown(f"- {file.name} ({(file.size / 1024):.1f} KB)")
+            for fname, fbytes in st.session_state.saved_file_bytes.items():
+                st.markdown(f"- {fname} ({len(fbytes) / 1024:.1f} KB)")
+
+            # Optional: button to clear all uploaded files
+            if st.button("🗑️ Clear All Files", use_container_width=True):
+                st.session_state.saved_file_bytes = {}
+                st.rerun()
 
         if st.button("⚙️ Process Documents", use_container_width=True):
-            files_to_process = st.session_state.uploaded_files
+            files_to_process = st.session_state.saved_file_bytes
             if files_to_process:
                 if not os.path.exists(DATA_DIR):
                     os.makedirs(DATA_DIR)
                 with st.spinner("Saving files and building vector index..."):
                     success_count = 0
-                    for file in files_to_process:
+                    for fname, fbytes in files_to_process.items():
                         try:
-                            file_path = os.path.join(DATA_DIR, file.name)
+                            file_path = os.path.join(DATA_DIR, fname)
+                            # ✅ FIX: Write from saved bytes, not stale file objects
                             with open(file_path, "wb") as f:
-                                f.write(file.getbuffer())
+                                f.write(fbytes)
                             success_count += 1
                         except Exception as e:
-                            st.error(f"Failed to save {file.name}: {e}")
+                            st.error(f"Failed to save {fname}: {e}")
                     if success_count > 0:
                         try:
                             ingest_documents()
@@ -323,13 +321,11 @@ def main():
             st.warning("Please select at least one Active Document from the sidebar before asking a question.")
             st.stop()
 
-        # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
         scroll_to_bottom()
 
-        # Generate assistant response (no dimming spinner)
         with st.chat_message("assistant"):
             thinking_placeholder = st.empty()
             thinking_placeholder.markdown(
@@ -343,20 +339,17 @@ def main():
             try:
                 response, sources = ask_question(prompt, active_docs)
 
-                # Ensure response is a non-empty string
                 if not response:
                     response = "I couldn't find an answer in the selected documents. Please try rephrasing or check your document selection."
                 elif not isinstance(response, str):
                     response = str(response)
 
-                # Ensure sources is a list
                 if sources is None:
                     sources = []
 
                 thinking_placeholder.empty()
                 st.markdown(response)
 
-                # Store response
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": response,
@@ -375,7 +368,6 @@ def main():
             except Exception as e:
                 thinking_placeholder.empty()
                 st.error(f"Error generating response: {e}")
-                # Optionally store a fallback message
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": "Sorry, an error occurred while processing your question.",
