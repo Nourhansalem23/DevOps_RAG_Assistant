@@ -237,7 +237,8 @@ def main():
             help="Drag and drop or click to select multiple PDFs."
         )
 
-        
+       
+        # Store bytes in session_state so they survive reruns.
         if uploaded_files:
             for file in uploaded_files:
                 if file.name not in st.session_state.saved_file_bytes:
@@ -267,7 +268,7 @@ def main():
                     for fname, fbytes in files_to_process.items():
                         try:
                             file_path = os.path.join(DATA_DIR, fname)
-                          
+                            
                             with open(file_path, "wb") as f:
                                 f.write(fbytes)
                             success_count += 1
