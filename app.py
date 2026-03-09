@@ -237,8 +237,7 @@ def main():
             help="Drag and drop or click to select multiple PDFs."
         )
 
-        # ✅ FIX: Read file bytes IMMEDIATELY while the file objects are still fresh.
-        # Store bytes in session_state so they survive reruns.
+        
         if uploaded_files:
             for file in uploaded_files:
                 if file.name not in st.session_state.saved_file_bytes:
@@ -268,7 +267,7 @@ def main():
                     for fname, fbytes in files_to_process.items():
                         try:
                             file_path = os.path.join(DATA_DIR, fname)
-                            # ✅ FIX: Write from saved bytes, not stale file objects
+                          
                             with open(file_path, "wb") as f:
                                 f.write(fbytes)
                             success_count += 1
